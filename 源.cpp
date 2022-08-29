@@ -56,7 +56,7 @@ int main() {
             for (int s = 0; s < samples_per_pixel; ++s) {
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
-                ray r = cam.get_ray(u, v);
+                ray r = cam.get_ray(u, v);//从cam类中直接调用成员函数计算光照结果
                 pixel_color += ray_color(r, world);
             }
             write_color(std::cout, pixel_color, samples_per_pixel);
