@@ -37,7 +37,7 @@ int main() {
     hittable_list world;
     world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));//智能指针创建球体
     world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));//背景线
-    const int samples_per_pixel = 100;
+    const int samples_per_pixel = 100;//用来反走样的随机采样次数
 
     // Camera封装
     camera cam;
@@ -52,6 +52,7 @@ int main() {
         std::cerr << "\r渲染剩余进度" << j << ' ' << std::flush;//只报告错误
         for (int i = 0; i < image_width; ++i) {
             color pixel_color(0, 0, 0);
+            //每次采样在 采样范围内做平均，平均的时候随机取周围0到1范围内的100次，
             for (int s = 0; s < samples_per_pixel; ++s) {
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
