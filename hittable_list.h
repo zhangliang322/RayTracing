@@ -18,8 +18,8 @@ public:
     void clear() { objects.clear(); }
     void add(shared_ptr<hittable> object) { objects.push_back(object); }
 
-    inline virtual bool hit(const ray& r, double tmin, double tmax, hit_record& rec) const;
-
+    inline virtual bool hit(
+        const ray& r, double t_min, double t_max, hit_record& rec) const override;
 public:
     std::vector<shared_ptr<hittable>> objects;
 };
