@@ -4,7 +4,7 @@
 #include"vec3.h"
 #include"ray.h"
 #include "camera.h"
-
+#include"material.h"
 #include"get_random.h"
 #include "hittable_list.h"
 #include "sphere.h"
@@ -20,12 +20,19 @@ color ray_color(const ray& r, const hittable& world, int depth) {
     if (depth <= 0)
         return color(0, 0, 0);//递归终止条件
     //if (world.hit(r, 0.00, infinity, rec))
+    
+
     //加上0.001消除黑点，黑点是因为对 “0”会导致击中自己,而实际上只需要小于某个数很接近0的数就行
     if (world.hit(r, 0.001, infinity, rec)) {
-        //最后vector朗博反射
-        point3 target = rec.p + rec.normal + random_unit_vector();
-        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);//递归变化条件
-    }//击中小球并判断命中点，返回命中点,判断光源方向，并输出对应的颜色
+        //根据指针指向对象的材料和物体去做颜色判断
+        ray scattered;
+        color attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+            return attenuation * ray_color(scattered, world, depth - 1);
+        return color(0, 0, 0);//递归变化条件
+    }
+    
+    //击中小球并判断命中点，返回命中点,判断光源方向，并输出对应的颜色
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5 * (unit_direction.y() + 1.0);//t射线随着y 高度变化
     return(1.0 - t) * color(1.0, 1.0, 1.0) + t*color(0.5, 0.7,1.0);
@@ -42,12 +49,26 @@ int main() {
     const auto aspect_ratio = 16.0 / 9.0;
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width/aspect_ratio);
-    // World
-    hittable_list world;
-    world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));//智能指针创建球体
-    world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));//背景线
     const int samples_per_pixel = 100;//用来反走样的随机采样次数
     const int max_depth = 50;//最大递归深度（次数）
+    // World
+    hittable_list world;
+    //初始化材料类
+    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
+    //auto material_center = make_shared<lambertian>(color(0.7, 0.3, 0.3));
+    //玻璃类
+    auto material_center = make_shared<dielectric>(1.5);
+    auto material_left = make_shared<dielectric>(1.5);
+    //金属的最后一项是模糊系数
+    //auto material_left = make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
+    auto material_right = make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
+
+    //初始化物品类
+    world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(make_shared<sphere>(point3(0.0, 0.0, -1.0), 0.5, material_center));
+    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
+    world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
+    
     // Camera封装
     camera cam;
 

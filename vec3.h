@@ -62,6 +62,11 @@ public://方法
 	inline static vec3 random(double min, double max) {
 		return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
 	}
+	inline bool near_zero() const {
+		// Return true if the vector is close to zero in all dimensions.
+		const auto s = 1e-8;
+		return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+	}
 public://成员对象
 	double e[3];
 	
@@ -79,7 +84,10 @@ using color = vec3;//颜色RBG
 //}
  //上面那个随机生成函数的代替函数
  vec3 random_unit_vector();
-
+ //反射
+ vec3 reflect(const vec3& v, const vec3& n);
+ //折射
+ vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat);
 //向量vec3  功能函数方法，在类外定义功能时需要inline
 //面向 向量+向量
 inline std::ostream& operator<<(std::ostream& out, const vec3& v) {
