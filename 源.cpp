@@ -5,6 +5,7 @@
 #include"ray.h"
 #include "camera.h"
 
+#include"get_random.h"
 #include "hittable_list.h"
 #include "sphere.h"
 #include <iostream>
@@ -12,10 +13,16 @@
 
 
 //定义光照射线的颜色，方向还是原来方向
-color ray_color(const ray& r, const hittable& world) {
+color ray_color(const ray& r, const hittable& world, int depth) {
     hit_record rec;
+
+    // If we've exceeded the ray bounce limit, no more light is gathered.
+    if (depth <= 0)
+        return color(0, 0, 0);
+
     if (world.hit(r, 0, infinity, rec)) {
-        return 0.5 * (rec.normal + color(1, 1, 1));
+        point3 target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
     }//击中小球并判断命中点，返回命中点,判断光源方向，并输出对应的颜色
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5 * (unit_direction.y() + 1.0);//t射线随着y 高度变化
@@ -38,7 +45,7 @@ int main() {
     world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));//智能指针创建球体
     world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));//背景线
     const int samples_per_pixel = 100;//用来反走样的随机采样次数
-
+    const int max_depth = 50;
     // Camera封装
     camera cam;
 
@@ -57,7 +64,7 @@ int main() {
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
                 ray r = cam.get_ray(u, v);//从cam类中直接调用成员函数计算光照结果
-                pixel_color += ray_color(r, world);
+                pixel_color += ray_color(r, world, max_depth);
             }
             write_color(std::cout, pixel_color, samples_per_pixel);
 

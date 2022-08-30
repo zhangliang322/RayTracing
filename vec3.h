@@ -2,6 +2,7 @@
 #ifndef VEC3_H
 #define VEC3_H
 
+#include"get_random.h"
 #include<cmath>
 #include<iostream>
 
@@ -54,15 +55,29 @@ public://方法
 			<< static_cast<int>(255.999 * e[1]) << ' '
 			<< static_cast<int>(255.999 * e[2]) << '\n';
 	}
-	
+	inline static vec3 random() {
+		return vec3(random_double(), random_double(), random_double());
+	}
+
+	inline static vec3 random(double min, double max) {
+		return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
+	}
 public://成员对象
 	double e[3];
-
+	
 };
 using point3 = vec3; //3D
 using color = vec3;//颜色RBG
 
-#endif
+ vec3 random_in_unit_sphere();
+//{
+//	while (true) {
+//		auto p = vec3::random(-1, 1);
+//		if (p.length_squared() >= 1) continue;
+//		return p;
+//	}
+//}
+
 
 //向量vec3  功能函数方法，在类外定义功能时需要inline
 //面向 向量+向量
@@ -110,3 +125,4 @@ inline vec3 cross(const vec3& u, const vec3& v) {
 inline vec3 unit_vector(vec3 v) {
 	return v / v.length();
 }
+#endif

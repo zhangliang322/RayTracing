@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "rtweekend.h"
+#include "get_random.h"
 //封装camera信息属性
 class camera {
 public:
