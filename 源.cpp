@@ -10,7 +10,54 @@
 #include "sphere.h"
 #include <iostream>
 //引入自己的头文件
+//随机生成场景
+hittable_list random_scene() {
+    hittable_list world;
 
+    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, ground_material));
+
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            auto choose_mat = random_double();
+            point3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
+
+            if ((center - point3(4, 0.2, 0)).length() > 0.9) {
+                shared_ptr<material> sphere_material;
+
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    auto albedo = color::random() * color::random();
+                    sphere_material = make_shared<lambertian>(albedo);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                }
+                else if (choose_mat < 0.95) {
+                    // metal
+                    auto albedo = color::random(0.5, 1);
+                    auto fuzz = random_double(0, 0.5);
+                    sphere_material = make_shared<metal>(albedo, fuzz);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                }
+                else {
+                    // glass
+                    sphere_material = make_shared<dielectric>(1.5);
+                    world.add(make_shared<sphere>(center, 0.2, sphere_material));
+                }
+            }
+        }
+    }
+
+    auto material1 = make_shared<dielectric>(1.5);
+    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
+
+    auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
+    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
+
+    auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
+
+    return world;
+}
 
 //定义光照射线的颜色，方向还是原来方向
 color ray_color(const ray& r, const hittable& world, int depth) {
@@ -39,55 +86,32 @@ color ray_color(const ray& r, const hittable& world, int depth) {
     //111 白色         后面这个是蓝色
 }
 
-
 int main() {
     //相交判断
 
 
     // Image
-    //设定图像宽400 
-    const auto aspect_ratio = 16.0 / 9.0;
-    const int image_width = 400;
-    const int image_height = static_cast<int>(image_width/aspect_ratio);
-    const int samples_per_pixel = 100;//用来反走样的随机采样次数
+    //设定图像宽
+    const auto aspect_ratio = 3.0 / 2.0;
+    const int image_width = 1200;
+    const int image_height = static_cast<int>(image_width / aspect_ratio);
+    const int samples_per_pixel = 500;//用来反走样的随机采样次数
     const int max_depth = 50;//最大递归深度（次数）
-    // World
-    hittable_list world;
-    //初始化材料类
-    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
-    //auto material_center = make_shared<lambertian>(color(0.7, 0.3, 0.3));
-    //玻璃类
-    //auto material_center = make_shared<dielectric>(1.5);
-    //有时会反射的玻璃
-    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
-    auto material_left = make_shared<dielectric>(1.5);
-    //金属的最后一项是模糊系数
-    //auto material_left = make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
-    auto material_right = make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
-
-    //初始化物品类
-    world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
-    world.add(make_shared<sphere>(point3(0.0, 0.0, -1.0), 0.5, material_center));
-    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
-    //空心气泡，负半径，表面法线指向内部
-    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), -0.45, material_left));
-    world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
     
-    //广角
-    /*auto R = cos(pi / 4);
-    hittable_list world;
-
-    auto material_left = make_shared<lambertian>(color(0, 0, 1));
-    auto material_right = make_shared<lambertian>(color(1, 0, 0));
-
-    world.add(make_shared<sphere>(point3(-R, 0, -1), R, material_left));
-    world.add(make_shared<sphere>(point3(R, 0, -1), R, material_right));*/
+    
+    // World
+    //hittable_list world;
+    auto world = random_scene();
+   
     // Camera封装
-    //camera cam(90.0, aspect_ratio);
-    //高視角
-   // camera cam(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), 90, aspect_ratio);
-    //改变视野参数90->20
-    camera cam(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), 30, aspect_ratio);
+    
+    point3 lookfrom(13, 2, 3);
+    point3 lookat(0, 0, 0);
+    vec3 vup(0, 1, 0);
+    auto dist_to_focus = 10.0;
+    auto aperture = 0.1;
+    //具备景深的相机
+    camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
     // Render
 
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";

@@ -88,6 +88,9 @@ using color = vec3;//颜色RBG
  vec3 reflect(const vec3& v, const vec3& n);
  //折射
  vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat);
+ //散焦圆盘
+ vec3 random_in_unit_disk();
+
 //向量vec3  功能函数方法，在类外定义功能时需要inline
 //面向 向量+向量
 inline std::ostream& operator<<(std::ostream& out, const vec3& v) {
