@@ -9,12 +9,13 @@ void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) {
     auto r = pixel_color.x();
     auto g = pixel_color.y();
     auto b = pixel_color.z();
-    //根据采样值倍乘，等会要平均回去
-    // Divide the color by the number of samples.
+    //根据采样值倍乘，等会要平均回去，
+    // 伽马校正：因为人眼对 光和声音的感受不是线性的，而是log的，所以要开根来校正
+        // Divide the color by the number of samples and gamma-correct for gamma=2.0.
     auto scale = 1.0 / samples_per_pixel;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = sqrt(scale * r);
+    g = sqrt(scale * g);
+    b = sqrt(scale * b);
     //翻译成对应的颜色
     // Write the translated [0,255] value of each color component.
     out << static_cast<int>(256 * clamp(r, 0.0, 0.999)) << ' '

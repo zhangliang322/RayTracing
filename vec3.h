@@ -77,7 +77,8 @@ using color = vec3;//颜色RBG
 //		return p;
 //	}
 //}
-
+ //上面那个随机生成函数的代替函数
+ vec3 random_unit_vector();
 
 //向量vec3  功能函数方法，在类外定义功能时需要inline
 //面向 向量+向量

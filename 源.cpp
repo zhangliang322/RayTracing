@@ -15,14 +15,16 @@
 //定义光照射线的颜色，方向还是原来方向
 color ray_color(const ray& r, const hittable& world, int depth) {
     hit_record rec;
-
+    //深度限制，
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if (depth <= 0)
-        return color(0, 0, 0);
-
-    if (world.hit(r, 0, infinity, rec)) {
-        point3 target = rec.p + rec.normal + random_in_unit_sphere();
-        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
+        return color(0, 0, 0);//递归终止条件
+    //if (world.hit(r, 0.00, infinity, rec))
+    //加上0.001消除黑点，黑点是因为对 “0”会导致击中自己,而实际上只需要小于某个数很接近0的数就行
+    if (world.hit(r, 0.001, infinity, rec)) {
+        //最后vector朗博反射
+        point3 target = rec.p + rec.normal + random_unit_vector();
+        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);//递归变化条件
     }//击中小球并判断命中点，返回命中点,判断光源方向，并输出对应的颜色
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5 * (unit_direction.y() + 1.0);//t射线随着y 高度变化
@@ -45,7 +47,7 @@ int main() {
     world.add(make_shared<sphere>(point3(0, 0, -1), 0.5));//智能指针创建球体
     world.add(make_shared<sphere>(point3(0, -100.5, -1), 100));//背景线
     const int samples_per_pixel = 100;//用来反走样的随机采样次数
-    const int max_depth = 50;
+    const int max_depth = 50;//最大递归深度（次数）
     // Camera封装
     camera cam;
 
@@ -64,7 +66,7 @@ int main() {
                 auto u = (i + random_double()) / (image_width - 1);
                 auto v = (j + random_double()) / (image_height - 1);
                 ray r = cam.get_ray(u, v);//从cam类中直接调用成员函数计算光照结果
-                pixel_color += ray_color(r, world, max_depth);
+                pixel_color += ray_color(r, world, max_depth);//加上深度参数
             }
             write_color(std::cout, pixel_color, samples_per_pixel);
 

@@ -19,6 +19,7 @@ struct hit_record {
 //定义类名
 class hittable {
 public:
+    //t是射线方向向量和球相交的点
     virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const = 0;
 };
 
