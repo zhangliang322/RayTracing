@@ -57,7 +57,9 @@ int main() {
     auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
     //auto material_center = make_shared<lambertian>(color(0.7, 0.3, 0.3));
     //玻璃类
-    auto material_center = make_shared<dielectric>(1.5);
+    //auto material_center = make_shared<dielectric>(1.5);
+    //有时会反射的玻璃
+    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
     auto material_left = make_shared<dielectric>(1.5);
     //金属的最后一项是模糊系数
     //auto material_left = make_shared<metal>(color(0.8, 0.8, 0.8), 0.3);
@@ -67,11 +69,25 @@ int main() {
     world.add(make_shared<sphere>(point3(0.0, -100.5, -1.0), 100.0, material_ground));
     world.add(make_shared<sphere>(point3(0.0, 0.0, -1.0), 0.5, material_center));
     world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), 0.5, material_left));
+    //空心气泡，负半径，表面法线指向内部
+    world.add(make_shared<sphere>(point3(-1.0, 0.0, -1.0), -0.45, material_left));
     world.add(make_shared<sphere>(point3(1.0, 0.0, -1.0), 0.5, material_right));
     
-    // Camera封装
-    camera cam;
+    //广角
+    /*auto R = cos(pi / 4);
+    hittable_list world;
 
+    auto material_left = make_shared<lambertian>(color(0, 0, 1));
+    auto material_right = make_shared<lambertian>(color(1, 0, 0));
+
+    world.add(make_shared<sphere>(point3(-R, 0, -1), R, material_left));
+    world.add(make_shared<sphere>(point3(R, 0, -1), R, material_right));*/
+    // Camera封装
+    //camera cam(90.0, aspect_ratio);
+    //高視角
+   // camera cam(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), 90, aspect_ratio);
+    //改变视野参数90->20
+    camera cam(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), 30, aspect_ratio);
     // Render
 
     std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
